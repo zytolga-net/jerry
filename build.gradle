@@ -1,0 +1,44 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group = 'net.zytolga'
+version = '1.0.0'
+
+application {
+    mainClass.set("net.zytolga.Jerry")
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:6.0.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    implementation('ch.qos.logback:logback-classic:1.6.3')
+    implementation("net.dv8tion:JDA:6.5.0") {
+        // exclude voice modules
+        exclude module: 'opus-java' // required for encoding audio into opus, not needed if audio is already provided in opus encoding
+        exclude module: 'tink' // required for encrypting and decrypting audio
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+shadowJar {
+    archiveBaseName.set('jerry')
+    archiveClassifier.set('all')
+
+    manifest {
+        attributes('Main-Class': application.mainClass.get())
+    }
+
+    mergeServiceFiles()
+}
