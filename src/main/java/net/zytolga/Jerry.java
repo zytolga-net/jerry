@@ -28,6 +28,13 @@ public class Jerry extends ListenerAdapter {
 
         CommandListUpdateAction commands = jda.updateCommands();
 
+        try {
+
+
+        } catch(Exception e) {
+            logger.error("Error trying to get AMP information", e);
+        }
+
 
         try {
             jda.awaitReady(); // blocks until JDA has fully connected and cached data
@@ -70,10 +77,6 @@ public class Jerry extends ListenerAdapter {
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
-        // Only accept commands from guilds
-        if (event.getGuild() == null) {
-            return;
-        }
         //noinspection SwitchStatementWithTooFewBranches
         switch (event.getName()) {
             case "jerry":
