@@ -25,7 +25,8 @@ dependencies {
         // exclude voice modules
         exclude module: 'opus-java' // required for encoding audio into opus, not needed if audio is already provided in opus encoding
         exclude module: 'tink' // required for encrypting and decrypting audio
-    }
+
+        implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.2'}
 }
 
 test {
