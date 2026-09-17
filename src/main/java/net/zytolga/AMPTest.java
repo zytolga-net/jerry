@@ -1,14 +1,12 @@
 package net.zytolga;
 
 import dev.samstevens.totp.code.CodeGenerator;
-import dev.samstevens.totp.code.CodeVerifier;
 import dev.samstevens.totp.code.DefaultCodeGenerator;
-import dev.samstevens.totp.code.DefaultCodeVerifier;
 import dev.samstevens.totp.exceptions.CodeGenerationException;
 import dev.samstevens.totp.time.NtpTimeProvider;
 import dev.samstevens.totp.time.TimeProvider;
-import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.binary.Base32;
+import org.jetbrains.annotations.NotNull;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -55,7 +53,7 @@ public class AMPTest {
         }
     }
 
-    public String getSession() {
+    protected String getSession() {
         return session;
     }
 
@@ -82,7 +80,7 @@ public class AMPTest {
         }
     }
 
-    private String generate2FA(String secret) throws Exception {
+    private String generate2FA(@NotNull String secret) throws Exception {
         try {
             CodeGenerator gen = new DefaultCodeGenerator();
             TimeProvider timeProvider = new NtpTimeProvider("pool.ntp.org");
