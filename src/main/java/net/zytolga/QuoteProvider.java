@@ -1,6 +1,5 @@
 package net.zytolga;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,6 +8,7 @@ import java.util.Random;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import tools.jackson.databind.ObjectMapper;
 
 import java.awt.Color;
 
