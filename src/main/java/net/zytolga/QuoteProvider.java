@@ -9,7 +9,11 @@ import java.util.Random;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+
 import java.awt.Color;
+
+record Quote(String quote, String author) {
+}
 
 public class QuoteProvider {
     private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -28,15 +32,11 @@ public class QuoteProvider {
         }
     }
 
-    public Quote randomQuote() {
-        return quotes.get(random.nextInt(quotes.size()));
-    }
-
-    public MessageEmbed randomQuoteEmbed() {
+    public MessageEmbed randomQuote() {
         Quote quote = quotes.get(random.nextInt(quotes.size()));
         return new EmbedBuilder()
-                .setDescription("\"" + quote.getQuote() + "\"")
-                .setFooter(quote.getAuthor())
+                .setDescription("\"" + quote.quote() + "\"")
+                .setFooter(quote.author())
                 .setColor(Color.decode("#5865F2")) // Discord blurple, or whatever you like
                 .build();
     }

@@ -2,16 +2,17 @@ package net.zytolga;
 
 import java.util.List;
 
+@SuppressWarnings("FieldCanBeLocal")
 public class AMPService {
     private List<AMPInstance> instances;
-    private final String URL;
-    private final String USERNAME;
-    private final String PASSWORD;
+    private final String url;
+    private final String username;
+    private final String password;
 
-    public AMPService(String URL, String USERNAME, String PASSWORD) {
-        this.URL = URL;
-        this.USERNAME = USERNAME;
-        this.PASSWORD = PASSWORD;
+    public AMPService(String url, String username, String password) {
+        this.url = url;
+        this.username = username;
+        this.password = password;
     }
 
     //Add functionality and HTTP calls

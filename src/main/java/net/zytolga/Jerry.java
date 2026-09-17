@@ -7,10 +7,12 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.EnumSet;
+import java.util.Objects;
 
 public class Jerry extends ListenerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(Jerry.class);
@@ -27,15 +29,6 @@ public class Jerry extends ListenerAdapter {
                 .build();
 
         CommandListUpdateAction commands = jda.updateCommands();
-
-        try {
-
-
-        } catch(Exception e) {
-            logger.error("Error trying to get AMP information", e);
-        }
-
-
         try {
             jda.awaitReady(); // blocks until JDA has fully connected and cached data
         } catch (InterruptedException e) {
@@ -45,9 +38,7 @@ public class Jerry extends ListenerAdapter {
         }
 
         try {
-            jda.getGuildById("1276927121008230485")
-                    .updateCommands()
-                    .addCommands(
+            commands.addCommands(
                             Commands.slash("jerry", "jerry :)"),
                             Commands.slash("random_quote", "Gives a random quote")
                     )
@@ -55,19 +46,8 @@ public class Jerry extends ListenerAdapter {
                             success -> logger.info("Commands registered successfully"),
                             failure -> logger.error("Failed to register commands")
                     );
-
-            //noinspection ResultOfMethodCallIgnored
-//            commands.addCommands(
-//                Commands.slash("jerry", "jerry :)")
-//                    .setContexts(InteractionContextType.ALL)
-//                    .setIntegrationTypes(IntegrationType.ALL),
-//                Commands.slash("random_quote", "Gives a random quote")
-//                    .setContexts(InteractionContextType.ALL)
-//                    .setIntegrationTypes(IntegrationType.ALL)
-//            ).queue(
-//                    success -> logger.info("Commands registered successfully"),
-//                    failure -> logger.error("Failed to register commands")
-//            );
+        } catch (NullPointerException e) {
+            logger.error("Error adding commands. Guild not found.", e);
         } catch (IllegalArgumentException e) {
             logger.error("Error adding commands. Null or more than 100 commands, 15 user context commands, or 15 message context commands, are provided.", e);
         } catch (Exception e) {
@@ -76,16 +56,13 @@ public class Jerry extends ListenerAdapter {
     }
 
     @Override
-    public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
-        //noinspection SwitchStatementWithTooFewBranches
+    public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         switch (event.getName()) {
             case "jerry":
                 say(event, "https://klipy.com/gifs/creo-creomusic-1");
                 break;
             case "random_quote":
-                Quote quote = quoteProvider.randomQuote();
-                event.replyEmbeds(quoteProvider.randomQuoteEmbed()).queue();
-//                say(event, "Quote: " + quote.getQuote() + "\n" + "Author" + quote.getAuthor());
+                event.replyEmbeds(quoteProvider.randomQuote()).queue();
                 break;
             default:
                 event.reply("I can't handle that command right now :(")
@@ -94,7 +71,7 @@ public class Jerry extends ListenerAdapter {
         }
     }
 
-    public void say(SlashCommandInteractionEvent event, String content) {
+    public void say(@NotNull SlashCommandInteractionEvent event, String content) {
         event.reply(content).queue();
     }
 }
