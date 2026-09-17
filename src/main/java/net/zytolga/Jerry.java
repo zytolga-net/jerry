@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.EnumSet;
-import java.util.Objects;
 
 public class Jerry extends ListenerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(Jerry.class);
