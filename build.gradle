@@ -27,6 +27,17 @@ dependencies {
         exclude module: 'tink' // required for encrypting and decrypting audio
     }
     implementation 'tools.jackson.core:jackson-databind:3.2.2'
+
+    // TOTP library has vulnerable dependencies. Exclude vulnerable dependencies from the library and add manually with updated versions.
+    //noinspection VulnerableLibrariesLocal
+    implementation('dev.samstevens.totp:totp:1.7.1') {
+        exclude module: 'jcommander'
+        exclude module: 'commons-compress'
+    }
+    implementation 'com.beust:jcommander:1.82'
+    implementation('org.apache.commons:commons-compress:1.28.0') {
+        exclude module: 'commons-lang'
+    }
 }
 
 test {
