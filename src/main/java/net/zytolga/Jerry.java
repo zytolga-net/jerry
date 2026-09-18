@@ -2,6 +2,7 @@ package net.zytolga;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.MessageReference;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -12,13 +13,15 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.EnumSet;
 import java.util.Objects;
 
 public class Jerry extends ListenerAdapter {
     public static final Logger logger = LoggerFactory.getLogger(Jerry.class);
-    private final QuoteProvider quoteProvider = new QuoteProvider();
     private static AMPTest ampTest;
+    private final QuoteProvider quoteProvider = new QuoteProvider();
 
     public Jerry() {
         super();
@@ -29,17 +32,9 @@ public class Jerry extends ListenerAdapter {
         logger.info("Licensed under the Blue Oak Model License 1.0.0 (see https://blueoakcouncil.org/license/1.0.0 for details)");
         logger.info("Starting Jerry...");
 
-        EnumSet<GatewayIntent> intents = EnumSet.of(
-                GatewayIntent.GUILD_MESSAGES,
-                GatewayIntent.DIRECT_MESSAGES,
-                GatewayIntent.MESSAGE_CONTENT,
-                GatewayIntent.GUILD_MESSAGE_REACTIONS,
-                GatewayIntent.DIRECT_MESSAGE_REACTIONS
-        );
+        EnumSet<GatewayIntent> intents = EnumSet.of(GatewayIntent.GUILD_MESSAGES, GatewayIntent.DIRECT_MESSAGES, GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MESSAGE_REACTIONS, GatewayIntent.DIRECT_MESSAGE_REACTIONS);
 
-        JDA jda = JDABuilder.createLight(System.getenv("DISCORD_TOKEN"), intents)
-                .addEventListeners(new Jerry())
-                .build();
+        JDA jda = JDABuilder.createLight(System.getenv("DISCORD_TOKEN"), intents).addEventListeners(new Jerry()).build();
 
 //        CommandListUpdateAction commands = jda.updateCommands();
         try {
@@ -51,14 +46,7 @@ public class Jerry extends ListenerAdapter {
         }
 
         try {
-            Objects.requireNonNull(jda.getGuildById(System.getenv("GUILD_TOKEN"))).updateCommands().addCommands(
-                            Commands.slash("jerry", "jerry :)"),
-                            Commands.slash("random_quote", "Gives a random quote")
-                    )
-                    .queue(
-                            success -> logger.info("Commands registered successfully"),
-                            failure -> logger.error("Failed to register commands")
-                    );
+            Objects.requireNonNull(jda.getGuildById(System.getenv("GUILD_TOKEN"))).updateCommands().addCommands(Commands.slash("jerry", "jerry :)"), Commands.slash("random_quote", "Gives a random quote")).queue(success -> logger.info("Commands registered successfully"), failure -> logger.error("Failed to register commands"));
         } catch (NullPointerException e) {
             logger.error("Error adding commands. Guild not found.", e);
         } catch (IllegalArgumentException e) {
@@ -95,24 +83,32 @@ public class Jerry extends ListenerAdapter {
                 event.replyEmbeds(quoteProvider.randomQuote()).queue();
                 break;
             default:
-                event.reply("I can't handle that command right now :(")
-                        .setEphemeral(true)
-                        .queue();
+                event.reply("I can't handle that command right now :(").setEphemeral(true).queue();
         }
     }
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
         if (event.isFromType(ChannelType.PRIVATE)) {
-            System.out.printf("[PM] %s: %s\n", Objects.requireNonNull(event.getAuthor()).getEffectiveName(),
-                    event.getMessage().getContentRaw());
+            System.out.printf("\u001B[35m%s \u001B[36m[PM] \u001B[0m%s: %s\n", now.format(formatter), Objects.requireNonNull(event.getAuthor()).getEffectiveName(), event.getMessage().getContentRaw());
         } else {
-            System.out.printf("[%s][%s] %s: %s\n", event.getGuild().getName(),
-                    event.getChannel().getName(), Objects.requireNonNull(event.getMember()).getEffectiveName(),
-                    event.getMessage().getContentRaw());
-            if (event.getMessage().getContentRaw().contains("<@" + event.getJDA().getSelfUser().getId() + ">")) {
-                event.getChannel().asTextChannel().sendMessage("<@" + event.getMember().getId() + "> kys").queue();
-            }
+            System.out.printf("\u001B[35m%s \u001B[36m[%s]\u001B[32m[%s] \u001B[0m%s: %s\n", now.format(formatter), event.getGuild().getName(), event.getChannel().getName(), Objects.requireNonNull(event.getMember()).getEffectiveName(), event.getMessage().getContentRaw());
+        }
+        if (event.getAuthor().isBot()) return;
+
+        if (event.getMessage().getMessageReference() != null) {
+            MessageReference reference = event.getMessage().getMessageReference();
+            reference.resolve().queue(referencedMessage -> {
+                if (referencedMessage.getAuthor().getIdLong() == event.getJDA().getSelfUser().getIdLong()) {
+                    event.getMessage().reply("I SAID I DON'T FUCKING KNOW!").mentionRepliedUser(false).queue();
+                }
+            });
+
+        } else if (event.getMessage().getContentRaw().contains("<@" + event.getJDA().getSelfUser().getId() + ">")) {
+            event.getMessage().reply("I don't know").mentionRepliedUser(false).queue();
         }
     }
 
