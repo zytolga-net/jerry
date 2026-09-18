@@ -3,9 +3,17 @@
         xmlns="http://ch.qos.logback/xml/ns/logback"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://ch.qos.logback/xml/ns/logback https://raw.githubusercontent.com/moonfruit/logback-xsd/refs/heads/master/src/main/xsd/logback.xsd">
+    <conversionRule conversionWord="chatlevel" class="net.zytolga.ChatLevelConverter"/>
+
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %boldCyan(%-34.-34thread) %red(%10.10X{jda.shard}) %boldGreen(%-15.-15logger{0}) %highlight(%-6level) %msg%n</pattern>
+            <pattern>%magenta(%d{yyyy-MM-dd HH:mm:ss}) %boldGreen(%-15.-15logger{0}) %highlight(%-6level) %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="CHAT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%magenta(%d{yyyy-MM-dd HH:mm:ss}) %boldGreen(%-15.-15logger{0}) %highlight(%-6chatlevel) %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -16,9 +24,14 @@
             <maxHistory>14</maxHistory>
         </rollingPolicy>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %X{jda.shard} %logger{0} %-6level %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %logger{0} %-6chatlevel %replace(%msg){'\x1B\[[0-9;]*m', ''}%n</pattern>
         </encoder>
     </appender>
+
+    <logger name="Chat" level="info" additivity="false">
+        <appender-ref ref="CHAT"/>
+        <appender-ref ref="FILE"/>
+    </logger>
 
     <root level="info">
         <appender-ref ref="STDOUT"/>

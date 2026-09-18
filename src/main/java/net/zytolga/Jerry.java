@@ -16,14 +16,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.EnumSet;
 import java.util.Objects;
 
 @SuppressWarnings("CommentedOutCode")
 public class Jerry extends ListenerAdapter {
     public static final Logger logger = LoggerFactory.getLogger(Jerry.class);
+    private static final Logger chatLogger = LoggerFactory.getLogger("Chat");
     private final QuoteProvider quoteProvider = new QuoteProvider();
 
     final DialogueHandler dialogueHandler = new DialogueHandler();
@@ -131,13 +130,10 @@ public class Jerry extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
         if (event.isFromType(ChannelType.PRIVATE)) {
-            System.out.printf("\u001B[35m%s \u001B[36m[PM] \u001B[0m%s: %s\n", now.format(formatter), Objects.requireNonNull(event.getAuthor()).getEffectiveName(), event.getMessage().getContentRaw());
+            chatLogger.info("\u001B[36m[PM] \u001B[0m{}: {}", Objects.requireNonNull(event.getAuthor()).getEffectiveName(), event.getMessage().getContentRaw());
         } else {
-            System.out.printf("\u001B[35m%s \u001B[36m[%s]\u001B[32m[%s] \u001B[0m%s: %s\n", now.format(formatter), event.getGuild().getName(), event.getChannel().getName(), Objects.requireNonNull(event.getMember()).getEffectiveName(), event.getMessage().getContentRaw());
+            chatLogger.info("\u001B[36m[{}]\u001B[32m[{}] \u001B[0m{}: {}", event.getGuild().getName(), event.getChannel().getName(), Objects.requireNonNull(event.getMember()).getEffectiveName(), event.getMessage().getContentRaw());
         }
         if (event.getAuthor().isBot()) return;
 
