@@ -35,7 +35,7 @@ public class MessageClassifier {
                 "good bot", "great bot", "love you", "youre the best", "you're amazing", "youre amazing", "nice bot", "smart bot", "well done", "thank you so much"
         ));
         triggers.put(Category.INSULT, List.of(
-                "bad bot", "stupid bot", "dumb bot", "worst bot", "useless bot", "shut up", "i hate you", "you suck", "trash bot", "garbage bot"
+                "bad bot", "stupid bot", "dumb bot", "worst bot", "useless bot", "shut up", "i hate you", "you suck", "trash bot", "garbage bot", "kys"
         ));
         triggers.put(Category.THANKS, List.of(
                 "thanks", "thank you", "thx", "ty", "appreciate it"

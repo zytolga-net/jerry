@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.zytolga.dialogue.DialogueHandler;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,8 @@ public class Jerry extends ListenerAdapter {
     private static AMPTest ampTest;
     private final QuoteProvider quoteProvider = new QuoteProvider();
     FileHandler fileHandler = new FileHandler("application.log", true);
+
+    DialogueHandler dialogueHandler = new DialogueHandler();
 
     public Jerry() throws IOException {
         super();
@@ -102,6 +105,31 @@ public class Jerry extends ListenerAdapter {
         }
     }
 
+//    @Override
+//    public void onMessageReceived(@NotNull MessageReceivedEvent event) {
+//        LocalDateTime now = LocalDateTime.now();
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+//
+//        if (event.isFromType(ChannelType.PRIVATE)) {
+//            System.out.printf("\u001B[35m%s \u001B[36m[PM] \u001B[0m%s: %s\n", now.format(formatter), Objects.requireNonNull(event.getAuthor()).getEffectiveName(), event.getMessage().getContentRaw());
+//        } else {
+//            System.out.printf("\u001B[35m%s \u001B[36m[%s]\u001B[32m[%s] \u001B[0m%s: %s\n", now.format(formatter), event.getGuild().getName(), event.getChannel().getName(), Objects.requireNonNull(event.getMember()).getEffectiveName(), event.getMessage().getContentRaw());
+//        }
+//        if (event.getAuthor().isBot()) return;
+//
+//        if (event.getMessage().getMessageReference() != null) {
+//            MessageReference reference = event.getMessage().getMessageReference();
+//            reference.resolve().queue(referencedMessage -> {
+//                if (referencedMessage.getAuthor().getIdLong() == event.getJDA().getSelfUser().getIdLong()) {
+//                    event.getMessage().reply("I SAID I DON'T FUCKING KNOW!").mentionRepliedUser(false).queue();
+//                }
+//            });
+//
+//        } else if (event.getMessage().getContentRaw().contains("<@" + event.getJDA().getSelfUser().getId() + ">")) {
+//            event.getMessage().reply("I don't know").mentionRepliedUser(false).queue();
+//        }
+//    }
+
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         LocalDateTime now = LocalDateTime.now();
@@ -118,12 +146,14 @@ public class Jerry extends ListenerAdapter {
             MessageReference reference = event.getMessage().getMessageReference();
             reference.resolve().queue(referencedMessage -> {
                 if (referencedMessage.getAuthor().getIdLong() == event.getJDA().getSelfUser().getIdLong()) {
-                    event.getMessage().reply("I SAID I DON'T FUCKING KNOW!").mentionRepliedUser(false).queue();
+//                    event.getMessage().reply("I SAID I DON'T FUCKING KNOW!").mentionRepliedUser(false).queue();
+                    event.getMessage().reply(dialogueHandler.handleMessage(event.getAuthor().getId(), event.getMessage().getContentRaw())).mentionRepliedUser(false).queue();
                 }
             });
 
         } else if (event.getMessage().getContentRaw().contains("<@" + event.getJDA().getSelfUser().getId() + ">")) {
-            event.getMessage().reply("I don't know").mentionRepliedUser(false).queue();
+//            event.getMessage().reply("I don't know").mentionRepliedUser(false).queue();
+            event.getMessage().reply(dialogueHandler.handleMessage(event.getAuthor().getId(), event.getMessage().getContentRaw())).mentionRepliedUser(false).queue();
         }
     }
 

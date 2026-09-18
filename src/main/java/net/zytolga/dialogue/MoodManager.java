@@ -24,6 +24,11 @@ public class MoodManager {
         return Tier.HAPPY;
     }
 
+    public synchronized void adjust(double delta) {
+        mood = Math.max(MIN, Math.min(MAX, mood + delta));
+    }
+
+
     public double getMood() {
         return mood;
     }
