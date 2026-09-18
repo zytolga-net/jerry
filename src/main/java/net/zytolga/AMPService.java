@@ -37,7 +37,7 @@ public class AMPService {
                     {"USERNAME": "%s","PASSWORD": "%s","token": "","RememberMe": true}
                 """.formatted(username, password);
 
-        JsonNode data = httpPost("/API/Core/Login", HttpRequest.BodyPublishers.ofString(loginBody));
+        JsonNode data = httpPost("/API/Core/Login", loginBody);
         if (!data.has("sessionID") || data.get("sessionID").asString().trim().isEmpty()) {
             throw new Exception("Invalid session ID returned from AMP");
         }
@@ -46,7 +46,7 @@ public class AMPService {
     }
 
     public void logout() {
-        httpPost("/API/Core/Logout", HttpRequest.BodyPublishers.ofString("{}"));
+        httpPost("/API/Core/Logout", "{}");
     }
 
 //    public List<AMPInstance> GetInstances() {
@@ -59,15 +59,30 @@ public class AMPService {
 //        return null;
 //    }
 //
-//    public void StartInstance(String instanceName) {
-//
-//    }
-//    public void RestartInstance(String instanceName) {
-//
-//    }
-//    public void StopInstance(String instanceName) {
-//
-//    }
+    public boolean StartInstance(String instanceName) {
+        String postContent = """
+                    {"InstanceName": "%s"}
+                """.formatted(instanceName);
+        JsonNode data = httpPost("/API/ADSModule/StartInstance", postContent);
+        logger.info(data.toString());
+        return data.get("Status").asBoolean();
+    }
+    public boolean RestartInstance(String instanceName) {
+        String postContent = """
+                    {"InstanceName": "%s"}
+                """.formatted(instanceName);
+        JsonNode data = httpPost("/API/ADSModule/RestartInstance", postContent);
+        logger.info(data.toString());
+        return data.get("Status").asBoolean();
+    }
+    public boolean StopInstance(String instanceName) {
+        String postContent = """
+                    {"InstanceName": "%s"}
+                """.formatted(instanceName);
+        JsonNode data = httpPost("/API/ADSModule/StopInstance", postContent);
+        logger.info(data.toString());
+        return data.get("Status").asBoolean();
+    }
 //
 //    public void CreateUser(String username) {
 //
@@ -82,15 +97,17 @@ public class AMPService {
 //
 //    }
 
-    public JsonNode httpPost(String uri, HttpRequest.BodyPublisher postContent) {
+    public JsonNode httpPost(String uri, String postContent) {
         try (HttpClient client = HttpClient.newHttpClient()) {
             ObjectMapper objectMapper = new ObjectMapper();
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(ampurl + uri))
                     .header("Accept", "application/json")
+                    .header("User-Agent", "Jerry/1.0")
+                    .header("Authorization", "Bearer " + sessionID)
                     .timeout(Duration.ofSeconds(10))
-                    .POST(postContent)
+                    .POST(HttpRequest.BodyPublishers.ofString(postContent))
                     .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());

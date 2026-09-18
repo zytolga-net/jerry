@@ -1,0 +1,15 @@
+{
+  "@jerry": [
+    "yes?",
+    "Hello %s!",
+    "That's me!"
+  ],
+  "hello": [
+    "Hello!",
+    "Hello %s!"
+  ],
+  "how are you":[
+    "fine"
+  ],
+  "what is"
+}

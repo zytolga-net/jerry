@@ -22,11 +22,10 @@ import java.util.logging.FileHandler;
 import java.util.logging.SimpleFormatter;
 
 public class Jerry extends ListenerAdapter {
-    FileHandler fileHandler = new FileHandler("application.log", true);
-
     public static final Logger logger = LoggerFactory.getLogger(Jerry.class);
     private static AMPTest ampTest;
     private final QuoteProvider quoteProvider = new QuoteProvider();
+    FileHandler fileHandler = new FileHandler("application.log", true);
 
     public Jerry() throws IOException {
         super();
@@ -63,6 +62,15 @@ public class Jerry extends ListenerAdapter {
         try {
             AMPService ampService = new AMPService("https://amp.zytolga.net", System.getenv("USERNAME"), System.getenv("PASSWORD"));
             ampService.login();
+            ampService.StartInstance("TestingWorld01");
+
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try {
+                    ampService.logout();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }));
         } catch (Exception e) {
             logger.error(e.getMessage(), e.getCause());
         }
@@ -75,13 +83,6 @@ public class Jerry extends ListenerAdapter {
 //            logger.error(e.getMessage(), e.getCause());
 //        }
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                ampTest.logout();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }));
 
     }
 
