@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.MessageReference;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -45,7 +46,12 @@ public class Jerry extends ListenerAdapter {
         logger.info("Licensed under the Blue Oak Model License 1.0.0 (see https://blueoakcouncil.org/license/1.0.0 for details)");
         logger.info("Starting Jerry...");
 
-        EnumSet<GatewayIntent> intents = EnumSet.of(GatewayIntent.GUILD_MESSAGES, GatewayIntent.DIRECT_MESSAGES, GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MESSAGE_REACTIONS, GatewayIntent.DIRECT_MESSAGE_REACTIONS);
+        EnumSet<GatewayIntent> intents = EnumSet.of(
+                GatewayIntent.GUILD_MESSAGES,
+                GatewayIntent.DIRECT_MESSAGES,
+                GatewayIntent.MESSAGE_CONTENT,
+                GatewayIntent.GUILD_MESSAGE_REACTIONS,
+                GatewayIntent.DIRECT_MESSAGE_REACTIONS);
 
         JDA jda = JDABuilder.createLight(System.getenv("DISCORD_TOKEN"), intents).addEventListeners(new Jerry()).build();
 
@@ -59,8 +65,23 @@ public class Jerry extends ListenerAdapter {
         }
 
         try {
-            commands.addCommands().queue(success -> logger.info("Global commands registered successfully"), failure -> logger.error("Failed to register global commands"));
-            Objects.requireNonNull(jda.getGuildById(System.getenv("GUILD_ID"))).updateCommands().addCommands(Commands.slash("jerry", "jerry :)"), Commands.slash("random_quote", "Gives a random quote")).queue(success -> logger.info("Guild commands registered successfully"), failure -> logger.error("Failed to register guild commands"));
+            commands
+                    .addCommands()
+                    .queue(
+                            success -> logger.info("Global commands registered successfully"),
+                            failure -> logger.error("Failed to register global commands"));
+            Objects.requireNonNull(jda.getGuildById(System.getenv("GUILD_ID")))
+                    .updateCommands()
+                    .addCommands(
+                            Commands.slash(
+                                    "jerry",
+                                    "jerry :)"),
+                            Commands.slash(
+                                    "random_quote",
+                                    "Gives a random quote")
+                    ).queue(
+                            success -> logger.info("Guild commands registered successfully"),
+                            failure -> logger.error("Failed to register guild commands"));
         } catch (NullPointerException e) {
             logger.error("Error adding commands. Guild not found.", e);
         } catch (IllegalArgumentException e) {
@@ -87,16 +108,6 @@ public class Jerry extends ListenerAdapter {
         } catch (Exception e) {
             logger.error(e.getMessage(), e.getCause());
         }
-
-//        try {
-//            ampTest = new AMPTest();
-//            String session = ampTest.getSession();
-//            logger.info(session);
-//        } catch (Exception e) {
-//            logger.error(e.getMessage(), e.getCause());
-//        }
-
-
     }
 
     @Override
@@ -141,9 +152,15 @@ public class Jerry extends ListenerAdapter {
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         if (event.isFromType(ChannelType.PRIVATE)) {
-            chatLogger.info("\u001B[36m[PM] \u001B[0m{}: {}", Objects.requireNonNull(event.getAuthor()).getEffectiveName(), event.getMessage().getContentRaw());
+            chatLogger.info("\u001B[36m[PM] \u001B[0m{}: {}",
+                    Objects.requireNonNull(event.getAuthor()).getEffectiveName(),
+                    event.getMessage().getContentRaw());
         } else {
-            chatLogger.info("\u001B[36m[{}]\u001B[32m[{}] \u001B[0m{}: {}", event.getGuild().getName(), event.getChannel().getName(), Objects.requireNonNull(event.getMember()).getEffectiveName(), event.getMessage().getContentRaw());
+            chatLogger.info("\u001B[36m[{}]\u001B[32m[{}] \u001B[0m{}: {}",
+                    event.getGuild().getName(),
+                    event.getChannel().getName(),
+                    Objects.requireNonNull(event.getMember()).getEffectiveName(),
+                    event.getMessage().getContentRaw());
         }
         if (event.getAuthor().isBot()) return;
 
@@ -151,18 +168,29 @@ public class Jerry extends ListenerAdapter {
             MessageReference reference = event.getMessage().getMessageReference();
             reference.resolve().queue(referencedMessage -> {
                 if (referencedMessage.getAuthor().getIdLong() == event.getJDA().getSelfUser().getIdLong()) {
-//                    event.getMessage().reply("I SAID I DON'T FUCKING KNOW!").mentionRepliedUser(false).queue();
-                    event.getMessage().reply(dialogueHandler.handleMessage(event.getAuthor().getId(), event.getMessage().getContentRaw())).mentionRepliedUser(false).queue();
+                    event.getMessage().reply(
+                            dialogueHandler.handleMessage(
+                                    event.getAuthor().getId(),
+                                    event.getMessage().getContentRaw()
+                            )).mentionRepliedUser(false).queue();
                 }
             });
 
         } else if (event.getMessage().getContentRaw().contains("<@" + event.getJDA().getSelfUser().getId() + ">")) {
-//            event.getMessage().reply("I don't know").mentionRepliedUser(false).queue();
-            event.getMessage().reply(dialogueHandler.handleMessage(event.getAuthor().getId(), event.getMessage().getContentRaw())).mentionRepliedUser(false).queue();
+            event.getMessage().reply(
+                    dialogueHandler.handleMessage(
+                            event.getAuthor().getId(),
+                            event.getMessage().getContentRaw()
+                    )).mentionRepliedUser(false).queue();
         }
     }
 
-    public void say(@NotNull SlashCommandInteractionEvent event, String content) {
-        event.reply(content).queue();
+    @Override
+    public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
+        if (event.getComponentId().equals("hello")) {
+            event.reply("Hello :)").queue(); // send a message in the channel
+        } else if (event.getComponentId().equals("emoji")) {
+            event.editMessage("That button didn't say click me").queue(); // update the message
+        }
     }
 }
