@@ -13,21 +13,26 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.EnumSet;
 import java.util.Objects;
+import java.util.logging.FileHandler;
+import java.util.logging.SimpleFormatter;
 
 public class Jerry extends ListenerAdapter {
+    FileHandler fileHandler = new FileHandler("application.log", true);
+
     public static final Logger logger = LoggerFactory.getLogger(Jerry.class);
     private static AMPTest ampTest;
     private final QuoteProvider quoteProvider = new QuoteProvider();
 
-    public Jerry() {
+    public Jerry() throws IOException {
         super();
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         logger.info("Copyright (c) 2026 Zytolga");
         logger.info("Licensed under the Blue Oak Model License 1.0.0 (see https://blueoakcouncil.org/license/1.0.0 for details)");
         logger.info("Starting Jerry...");
@@ -56,12 +61,19 @@ public class Jerry extends ListenerAdapter {
         }
 
         try {
-            ampTest = new AMPTest();
-            String session = ampTest.getSession();
-            logger.info(session);
+            AMPService ampService = new AMPService("https://amp.zytolga.net", System.getenv("USERNAME"), System.getenv("PASSWORD"));
+            ampService.login();
         } catch (Exception e) {
             logger.error(e.getMessage(), e.getCause());
         }
+
+//        try {
+//            ampTest = new AMPTest();
+//            String session = ampTest.getSession();
+//            logger.info(session);
+//        } catch (Exception e) {
+//            logger.error(e.getMessage(), e.getCause());
+//        }
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {

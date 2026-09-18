@@ -1,19 +1,103 @@
 package net.zytolga;
 
-import java.util.List;
+import dev.samstevens.totp.code.CodeGenerator;
+import dev.samstevens.totp.code.DefaultCodeGenerator;
+import dev.samstevens.totp.exceptions.CodeGenerationException;
+import dev.samstevens.totp.time.NtpTimeProvider;
+import dev.samstevens.totp.time.TimeProvider;
+import org.apache.commons.codec.binary.Base32;
+import org.jetbrains.annotations.NotNull;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
-@SuppressWarnings("FieldCanBeLocal")
+import java.io.IOException;
+import java.net.URI;
+import java.net.UnknownHostException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+
+import static net.zytolga.Jerry.logger;
+
 public class AMPService {
-    private List<AMPInstance> instances;
-    private final String url;
+    private final String ampurl;
     private final String username;
     private final String password;
+    private String sessionID;
 
-    public AMPService(String url, String username, String password) {
-        this.url = url;
+    public AMPService(String ampurl, String username, String password) {
+        this.ampurl = ampurl;
         this.username = username;
         this.password = password;
     }
 
-    //Add functionality and HTTP calls
+    public void login() throws Exception {
+        String loginBody = """
+                    {"USERNAME": "%s","PASSWORD": "%s","token": "","RememberMe": true}
+                """.formatted(username, password);
+
+        JsonNode data = httpPost("/API/Core/Login", HttpRequest.BodyPublishers.ofString(loginBody));
+        if (!data.has("sessionID") || data.get("sessionID").asString().trim().isEmpty()) {
+            throw new Exception("Invalid session ID returned from AMP");
+        }
+        sessionID = data.get("sessionID").asString();
+        logger.info("Session ID = " + sessionID);
+    }
+
+    public void logout() {
+        httpPost("/API/Core/Logout", HttpRequest.BodyPublishers.ofString("{}"));
+    }
+
+//    public List<AMPInstance> GetInstances() {
+//
+//    }
+//    public List<AMPInstance> GetInstances(boolean ForceIncludeSelf) {
+//
+//    }
+//    public AMPInstance GetInstance(String instanceID) {
+//        return null;
+//    }
+//
+//    public void StartInstance(String instanceName) {
+//
+//    }
+//    public void RestartInstance(String instanceName) {
+//
+//    }
+//    public void StopInstance(String instanceName) {
+//
+//    }
+//
+//    public void CreateUser(String username) {
+//
+//    }
+//    public void ChangeUserPassword(String username, String oldPassword, String newPassword, String twoFactorPin) {
+//
+//    }
+//    public void SetAMPUserRoleMembership(String userId, String roleId, boolean isMember) {
+//
+//    }
+//    public void GetAMPUserInfo(String username) {
+//
+//    }
+
+    public JsonNode httpPost(String uri, HttpRequest.BodyPublisher postContent) {
+        try (HttpClient client = HttpClient.newHttpClient()) {
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(ampurl + uri))
+                    .header("Accept", "application/json")
+                    .timeout(Duration.ofSeconds(10))
+                    .POST(postContent)
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return objectMapper.readTree(response.body());
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e.getCause());
+            return null;
+        }
+    }
 }
