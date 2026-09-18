@@ -1,35 +1,34 @@
 package net.zytolga;
 
-import dev.samstevens.totp.code.CodeGenerator;
-import dev.samstevens.totp.code.DefaultCodeGenerator;
-import dev.samstevens.totp.exceptions.CodeGenerationException;
-import dev.samstevens.totp.time.NtpTimeProvider;
-import dev.samstevens.totp.time.TimeProvider;
-import org.apache.commons.codec.binary.Base32;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.jetbrains.annotations.NotNull;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.UnknownHostException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.List;
 
 import static net.zytolga.Jerry.logger;
 
+@SuppressWarnings("CommentedOutCode")
 public class AMPService {
-    private final String ampurl;
+    private final String ampURL;
     private final String username;
     private final String password;
     private String sessionID;
+    private SecureRandom secureRandom;
 
-    public AMPService(String ampurl, String username, String password) {
-        this.ampurl = ampurl;
+    public AMPService(String ampURL, String username, String password) {
+        try {
+            secureRandom = SecureRandom.getInstance("NativePRNGNonBlocking");
+        } catch (NoSuchAlgorithmException e) {
+            secureRandom = new SecureRandom();
+        }
+        this.ampURL = ampURL;
         this.username = username;
         this.password = password;
     }
@@ -44,7 +43,7 @@ public class AMPService {
             throw new Exception("Invalid session ID returned from AMP");
         }
         sessionID = data.get("sessionID").asString();
-        logger.info("Session ID = " + sessionID);
+        logger.info("Session ID = {}", sessionID);
     }
 
     public void logout() {
@@ -59,6 +58,8 @@ public class AMPService {
         logger.info(data.toString());
         return null;
     }
+
+    @SuppressWarnings("UnusedReturnValue")
     public List<AMPInstance> GetInstances(boolean ForceIncludeSelf) {
         String postContent = """
                     {"ForceIncludeSelf": %b}
@@ -67,6 +68,7 @@ public class AMPService {
         logger.info(data.toString());
         return null;
     }
+
     public List<AMPInstance> GetInstance(String instanceID) {
         String postContent = """
                     {"InstanceID": %s}
@@ -75,6 +77,8 @@ public class AMPService {
         logger.info(data.toString());
         return null;
     }
+
+    @SuppressWarnings("UnusedReturnValue")
     public boolean StartInstance(String instanceName) {
         String postContent = """
                     {"InstanceName": "%s"}
@@ -83,6 +87,7 @@ public class AMPService {
         logger.info(data.toString());
         return data.get("Status").asBoolean();
     }
+
     public boolean RestartInstance(String instanceName) {
         String postContent = """
                     {"InstanceName": "%s"}
@@ -91,6 +96,7 @@ public class AMPService {
         logger.info(data.toString());
         return data.get("Status").asBoolean();
     }
+
     public boolean StopInstance(String instanceName) {
         String postContent = """
                     {"InstanceName": "%s"}
@@ -99,15 +105,18 @@ public class AMPService {
         logger.info(data.toString());
         return data.get("Status").asBoolean();
     }
+
+    @SuppressWarnings("UnusedReturnValue")
     public String AddUser(String username) {
         String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#%^&*-_=+";
-        String pwd = RandomStringUtils.random( 16, characters );
+        String pwd = secureRandom.ints(16, 0, characters.length()).mapToObj(characters::charAt).collect(StringBuilder::new, StringBuilder::append, StringBuilder::append).toString();
 
         CreateUser(username);
         ResetUserPassword(username, pwd);
-        logger.info("User " + username + " created with password " + pwd);
+        logger.info("User {} created with password {}", username, pwd);
         return pwd;
     }
+
     public void CreateUser(String username) {
         String postContent = """
                     {"Username": "%s"}
@@ -115,6 +124,7 @@ public class AMPService {
         JsonNode data = httpPost("/API/Core/CreateUser", postContent);
         logger.info(data.toString());
     }
+
     public void ResetUserPassword(String username, String newPassword) {
         String postContent = """
                     {"Username": "%s","NewPassword": "%s"}
@@ -122,7 +132,8 @@ public class AMPService {
         JsonNode data = httpPost("/API/Core/ResetUserPassword", postContent);
         logger.info(data.toString());
     }
-//    public void SetAMPUserRoleMembership(String userId, String roleId, boolean isMember) {
+
+    //    public void SetAMPUserRoleMembership(String userId, String roleId, boolean isMember) {
 //
 //    }
     public JsonNode GetAMPUserInfo(String username) {
@@ -138,14 +149,7 @@ public class AMPService {
         try (HttpClient client = HttpClient.newHttpClient()) {
             ObjectMapper objectMapper = new ObjectMapper();
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(ampurl + uri))
-                    .header("Accept", "application/json")
-                    .header("User-Agent", "Jerry/1.0")
-                    .header("Authorization", "Bearer " + sessionID)
-                    .timeout(Duration.ofSeconds(10))
-                    .POST(HttpRequest.BodyPublishers.ofString(postContent))
-                    .build();
+            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(ampURL + uri)).header("Accept", "application/json").header("User-Agent", "Jerry/1.0").header("Authorization", "Bearer " + sessionID).timeout(Duration.ofSeconds(10)).POST(HttpRequest.BodyPublishers.ofString(postContent)).build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             return objectMapper.readTree(response.body());

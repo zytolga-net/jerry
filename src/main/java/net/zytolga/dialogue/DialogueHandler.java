@@ -35,9 +35,11 @@ public class DialogueHandler {
     public MoodManager.Tier getCurrentMoodTier() {
         return mood.getTier();
     }
+
     public double getCurrentMoodScore() {
         return mood.getMood();
     }
+
     public void resetMood() {
         mood.setMood(0.0);
     }

@@ -24,8 +24,8 @@ public class AMPTest {
     private final String session;
 
     public AMPTest() throws Exception {
-        String username = System.getenv("USERNAME");
-        String password = System.getenv("PASSWORD");
+        String username = System.getenv("AMP_USERNAME");
+        String password = System.getenv("AMP_PASSWORD");
 
         try (HttpClient client = HttpClient.newHttpClient()) {
             ObjectMapper objectMapper = new ObjectMapper();

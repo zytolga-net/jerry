@@ -1,16 +1,17 @@
 package net.zytolga.dialogue;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
 /**
  * Holds the big pool of canned lines, organized as:
- *   category -> moodTier -> [ possible lines ]
- *
+ * category -> moodTier -> [ possible lines ]
+ * <p>
  * Loaded from responses.json (put it on the classpath, e.g. src/main/resources).
  * Keeps a short "recently used" memory per (category, tier) so it doesn't
  * repeat the same line twice in a row — this alone does a lot of work to
@@ -23,19 +24,15 @@ public class ResponseBank {
     private static final int NO_REPEAT_MEMORY = 2; // avoid repeating last N lines per bucket
     private final Random random = new Random();
 
-    public ResponseBank(InputStream jsonStream) throws IOException {
+    public ResponseBank(InputStream jsonStream) {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode root = mapper.readTree(jsonStream);
 
-        Iterator<String> categoryNames = root.propertyNames().iterator();
-        while (categoryNames.hasNext()) {
-            String category = categoryNames.next();
+        for (String category : root.propertyNames()) {
             JsonNode tiersNode = root.get(category);
             Map<String, List<String>> tierMap = new HashMap<>();
 
-            Iterator<String> tierNames = tiersNode.propertyNames().iterator();
-            while (tierNames.hasNext()) {
-                String tier = tierNames.next();
+            for (String tier : tiersNode.propertyNames()) {
                 List<String> lines = new ArrayList<>();
                 for (JsonNode lineNode : tiersNode.get(tier)) {
                     lines.add(lineNode.asString());
@@ -52,7 +49,7 @@ public class ResponseBank {
      * bucket is missing or empty, so a sparsely-filled responses.json never
      * throws — it just degrades gracefully.
      */
-    public String getResponse(String category, MoodManager.Tier tier) {
+    public String getResponse(String category, @NotNull MoodManager.Tier tier) {
         List<String> pool = lookup(category, tier.name());
         if (pool == null || pool.isEmpty()) {
             pool = lookup(category, "NEUTRAL");
@@ -85,6 +82,7 @@ public class ResponseBank {
         return chosen;
     }
 
+    @Nullable
     private List<String> lookup(String category, String tier) {
         Map<String, List<String>> tierMap = data.get(category);
         return tierMap == null ? null : tierMap.get(tier);

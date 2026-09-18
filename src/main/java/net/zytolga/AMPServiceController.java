@@ -3,7 +3,7 @@ package net.zytolga;
 public class AMPServiceController {
 
     public AMPServiceController(String sessionID) throws Exception {
-        AMPService ampService = new AMPService("https://amp.zytolga.net", System.getenv("USERNAME"), System.getenv("PASSWORD"));
+        AMPService ampService = new AMPService("https://amp.zytolga.net", System.getenv("AMP_USERNAME"), System.getenv("AMP_PASSWORD"));
         ampService.login();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {

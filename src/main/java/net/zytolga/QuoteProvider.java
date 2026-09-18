@@ -25,8 +25,7 @@ public class QuoteProvider {
             if (is == null) {
                 throw new IllegalStateException("quotes.json not found on classpath");
             }
-            quotes = MAPPER.readValue(is, MAPPER.getTypeFactory()
-                    .constructCollectionType(List.class, Quote.class));
+            quotes = MAPPER.readValue(is, MAPPER.getTypeFactory().constructCollectionType(List.class, Quote.class));
         } catch (IOException e) {
             throw new RuntimeException("Failed to load quotes.json", e);
         }
@@ -34,10 +33,7 @@ public class QuoteProvider {
 
     public MessageEmbed randomQuote() {
         Quote quote = quotes.get(random.nextInt(quotes.size()));
-        return new EmbedBuilder()
-                .setDescription("\"" + quote.quote() + "\"")
-                .setFooter(quote.author())
-                .setColor(Color.decode("#5865F2")) // Discord blurple, or whatever you like
+        return new EmbedBuilder().setDescription("\"" + quote.quote() + "\"").setFooter(quote.author()).setColor(Color.decode("#5865F2")) // Discord blurple, or whatever you like
                 .build();
     }
 }

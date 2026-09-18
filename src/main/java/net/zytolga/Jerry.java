@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import net.zytolga.dialogue.DialogueHandler;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -19,16 +20,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.EnumSet;
 import java.util.Objects;
-import java.util.logging.FileHandler;
-import java.util.logging.SimpleFormatter;
 
+@SuppressWarnings("CommentedOutCode")
 public class Jerry extends ListenerAdapter {
     public static final Logger logger = LoggerFactory.getLogger(Jerry.class);
-    private static AMPTest ampTest;
     private final QuoteProvider quoteProvider = new QuoteProvider();
-    FileHandler fileHandler = new FileHandler("application.log", true);
 
-    DialogueHandler dialogueHandler = new DialogueHandler();
+    final DialogueHandler dialogueHandler = new DialogueHandler();
 
     public Jerry() throws IOException {
         super();
@@ -43,7 +41,7 @@ public class Jerry extends ListenerAdapter {
 
         JDA jda = JDABuilder.createLight(System.getenv("DISCORD_TOKEN"), intents).addEventListeners(new Jerry()).build();
 
-//        CommandListUpdateAction commands = jda.updateCommands();
+        CommandListUpdateAction commands = jda.updateCommands();
         try {
             jda.awaitReady(); // blocks until JDA has fully connected and cached data
         } catch (InterruptedException e) {
@@ -53,7 +51,8 @@ public class Jerry extends ListenerAdapter {
         }
 
         try {
-            Objects.requireNonNull(jda.getGuildById(System.getenv("GUILD_TOKEN"))).updateCommands().addCommands(Commands.slash("jerry", "jerry :)"), Commands.slash("random_quote", "Gives a random quote")).queue(success -> logger.info("Commands registered successfully"), failure -> logger.error("Failed to register commands"));
+            commands.addCommands().queue(success -> logger.info("Global commands registered successfully"), failure -> logger.error("Failed to register global commands"));
+            Objects.requireNonNull(jda.getGuildById(System.getenv("GUILD_ID"))).updateCommands().addCommands(Commands.slash("jerry", "jerry :)"), Commands.slash("random_quote", "Gives a random quote")).queue(success -> logger.info("Guild commands registered successfully"), failure -> logger.error("Failed to register guild commands"));
         } catch (NullPointerException e) {
             logger.error("Error adding commands. Guild not found.", e);
         } catch (IllegalArgumentException e) {
@@ -63,7 +62,7 @@ public class Jerry extends ListenerAdapter {
         }
 
         try {
-            AMPService ampService = new AMPService("https://amp.zytolga.net", System.getenv("USERNAME"), System.getenv("PASSWORD"));
+            AMPService ampService = new AMPService("https://amp.zytolga.net", System.getenv("AMP_USERNAME"), System.getenv("AMP_PASSWORD"));
             ampService.login();
             ampService.StartInstance("TestingWorld01");
             ampService.GetInstances(false);
@@ -95,7 +94,7 @@ public class Jerry extends ListenerAdapter {
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         switch (event.getName()) {
             case "jerry":
-                say(event, "https://klipy.com/gifs/creo-creomusic-1");
+                event.reply("https://klipy.com/gifs/creo-creomusic-1").queue();
                 break;
             case "random_quote":
                 event.replyEmbeds(quoteProvider.randomQuote()).queue();
