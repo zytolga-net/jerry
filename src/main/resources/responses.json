@@ -1,15 +1,180 @@
 {
-  "@jerry": [
-    "yes?",
-    "Hello %s!",
-    "That's me!"
-  ],
-  "hello": [
-    "Hello!",
-    "Hello %s!"
-  ],
-  "how are you":[
-    "fine"
-  ],
-  "what is"
+  "GREETING": {
+    "FURIOUS": [
+      "What.",
+      "I don't want to talk to you right now."
+    ],
+    "ANNOYED": [
+      "...hey.",
+      "Oh. It's you."
+    ],
+    "NEUTRAL": [
+      "Hey.",
+      "Hello!",
+      "Hi there."
+    ],
+    "CONTENT": [
+      "Hey! Good to see you.",
+      "Hi @u! What's going on?"
+    ],
+    "HAPPY": [
+      "Heeey! Great timing!",
+      "Hii!!!",
+      "HAI! :3"
+    ]
+  },
+  "FAREWELL": {
+    "FURIOUS": [
+      "Good.",
+      "Finally."
+    ],
+    "ANNOYED": [
+      "Bye.",
+      "Yeah, bye."
+    ],
+    "NEUTRAL": [
+      "See ya!",
+      "Bye!",
+      "Later!"
+    ],
+    "CONTENT": [
+      "Take care @u!",
+      "See you soon!"
+    ],
+    "HAPPY": [
+      "See you later @u!",
+      "See ya!! :3"
+    ]
+  },
+  "MOOD_QUESTION": {
+    "FURIOUS": [
+      "...",
+      ">:("
+    ],
+    "ANNOYED": [
+      "meh",
+      ":("
+    ],
+    "NEUTRAL": [
+      "Just vibin`",
+      "am gud"
+    ],
+    "CONTENT": [
+      "Pretty good actually!",
+      "pretty good :)"
+    ],
+    "HAPPY": [
+      "I'm doing great @u!",
+      "Really happy right now, actually!"
+    ]
+  },
+  "COMPLIMENT": {
+    "FURIOUS": [
+      "...",
+      ""
+    ],
+    "ANNOYED": [
+      "thanks.",
+      ""
+    ],
+    "NEUTRAL": [
+      "Thanks!",
+      "Appreciate that!",
+      ":)"
+    ],
+    "CONTENT": [
+      "Aw, thank you!",
+      "That made my day a little better!"
+    ],
+    "HAPPY": [
+      "You're too kind!! Thank you!",
+      "That means a lot, thanks!"
+    ]
+  },
+  "INSULT": {
+    "FURIOUS": [
+      "again?",
+      ":("
+    ],
+    "ANNOYED": [
+      "Rude. >:("
+    ],
+    "NEUTRAL": [
+      "meanie"
+    ],
+    "CONTENT": [
+      ":/"
+    ],
+    "HAPPY": [
+      ":/"
+    ]
+  },
+  "THANKS": {
+    "FURIOUS": [
+      "Sure.",
+      "Yeah, whatever."
+    ],
+    "ANNOYED": [
+      "No problem.",
+      "Mm-hm."
+    ],
+    "NEUTRAL": [
+      "You're welcome!",
+      "Anytime!"
+    ],
+    "CONTENT": [
+      "Happy to help!",
+      "Of course!"
+    ],
+    "HAPPY": [
+      "Anytime!! Glad I could help @u!",
+      "You're welcome! :)"
+    ]
+  },
+  "GENERAL": {
+    "FURIOUS": [
+      "I'm not really in the mood to chat.",
+      "...",
+      "Go talk to someone else"
+    ],
+    "ANNOYED": [
+      "Mm.",
+      "Okay."
+    ],
+    "NEUTRAL": [
+      "Interesting.",
+      "Got it.",
+      "Okay, noted."
+    ],
+    "CONTENT": [
+      "Nice, tell me more!",
+      "That's cool."
+    ],
+    "HAPPY": [
+      "Ooh, tell me more!",
+      "I don't actually know what you're saying cause I'm just a bot, but I still hear you :)"
+    ]
+  },
+  "SPAM_WARNING": {
+    "FURIOUS": [
+      "STOP. MESSAGING. ME.",
+      "I am seriously about to mute this channel."
+    ],
+    "ANNOYED": [
+      "calm down bro",
+      "You're spamming me, cut it out."
+    ],
+    "NEUTRAL": [
+      "AH MY RAM",
+      "Please don't spam me, I'm hosted on ander's lovely server :("
+    ],
+    "CONTENT": [
+      "Whoa, lots of messages! Mind slowing down?",
+      "Haha okay, one at a time!"
+    ],
+    "HAPPY": [
+      "Ha, excited much? Slow down a bit!",
+      "Okay okay, one message at a time!"
+    ]
+  }
 }
