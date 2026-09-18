@@ -63,6 +63,8 @@ public class Jerry extends ListenerAdapter {
             AMPService ampService = new AMPService("https://amp.zytolga.net", System.getenv("USERNAME"), System.getenv("PASSWORD"));
             ampService.login();
             ampService.StartInstance("TestingWorld01");
+            ampService.GetInstances(false);
+            ampService.AddUser("jerry");
 
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {

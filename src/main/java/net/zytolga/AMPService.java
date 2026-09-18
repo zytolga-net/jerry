@@ -6,6 +6,7 @@ import dev.samstevens.totp.exceptions.CodeGenerationException;
 import dev.samstevens.totp.time.NtpTimeProvider;
 import dev.samstevens.totp.time.TimeProvider;
 import org.apache.commons.codec.binary.Base32;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.jetbrains.annotations.NotNull;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -17,6 +18,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.List;
 
 import static net.zytolga.Jerry.logger;
 
@@ -49,16 +51,30 @@ public class AMPService {
         httpPost("/API/Core/Logout", "{}");
     }
 
-//    public List<AMPInstance> GetInstances() {
-//
-//    }
-//    public List<AMPInstance> GetInstances(boolean ForceIncludeSelf) {
-//
-//    }
-//    public AMPInstance GetInstance(String instanceID) {
-//        return null;
-//    }
-//
+    public List<AMPInstance> GetInstances() {
+        String postContent = """
+                    {"ForceIncludeSelf": false}
+                """;
+        JsonNode data = httpPost("/API/ADSModule/GetInstances", postContent);
+        logger.info(data.toString());
+        return null;
+    }
+    public List<AMPInstance> GetInstances(boolean ForceIncludeSelf) {
+        String postContent = """
+                    {"ForceIncludeSelf": %b}
+                """.formatted(ForceIncludeSelf);
+        JsonNode data = httpPost("/API/ADSModule/GetInstances", postContent);
+        logger.info(data.toString());
+        return null;
+    }
+    public List<AMPInstance> GetInstance(String instanceID) {
+        String postContent = """
+                    {"InstanceID": %s}
+                """.formatted(instanceID);
+        JsonNode data = httpPost("/API/ADSModule/GetInstance", postContent);
+        logger.info(data.toString());
+        return null;
+    }
     public boolean StartInstance(String instanceName) {
         String postContent = """
                     {"InstanceName": "%s"}
@@ -83,19 +99,40 @@ public class AMPService {
         logger.info(data.toString());
         return data.get("Status").asBoolean();
     }
-//
-//    public void CreateUser(String username) {
-//
-//    }
-//    public void ChangeUserPassword(String username, String oldPassword, String newPassword, String twoFactorPin) {
-//
-//    }
+    public String AddUser(String username) {
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#%^&*-_=+";
+        String pwd = RandomStringUtils.random( 16, characters );
+
+        CreateUser(username);
+        ResetUserPassword(username, pwd);
+        logger.info("User " + username + " created with password " + pwd);
+        return pwd;
+    }
+    public void CreateUser(String username) {
+        String postContent = """
+                    {"Username": "%s"}
+                """.formatted(username);
+        JsonNode data = httpPost("/API/Core/CreateUser", postContent);
+        logger.info(data.toString());
+    }
+    public void ResetUserPassword(String username, String newPassword) {
+        String postContent = """
+                    {"Username": "%s","NewPassword": "%s"}
+                """.formatted(username, newPassword);
+        JsonNode data = httpPost("/API/Core/ResetUserPassword", postContent);
+        logger.info(data.toString());
+    }
 //    public void SetAMPUserRoleMembership(String userId, String roleId, boolean isMember) {
 //
 //    }
-//    public void GetAMPUserInfo(String username) {
-//
-//    }
+    public JsonNode GetAMPUserInfo(String username) {
+        String postContent = """
+                    {"Username": "%s"}
+                """.formatted(username);
+        JsonNode data = httpPost("/API/Core/GetAMPUserInfo", postContent);
+        logger.info(data.toString());
+        return data;
+    }
 
     public JsonNode httpPost(String uri, String postContent) {
         try (HttpClient client = HttpClient.newHttpClient()) {

@@ -4,52 +4,49 @@ import java.util.List;
 
 public class AMPInstance {
     private final String instanceID;
+    private final String instanceName;
     private final String friendlyName;
+    private final String ampVersion;
+
     private final String description;
     private final String serverType;
 
-    private final String ipAddress;
+    private final String applicationIP;
     private final List<Integer> ports;
 
-    private boolean isRunning;
+    private boolean running;
     private int numPlayers;
 
     private int cpuUsage;
     private int memUsage;
     private final int maxMemory;
 
-    public AMPInstance(String instanceID, String friendlyName, String description, String serverType, String ipAddress, List<Integer> ports, int maxMemory) {
+    public AMPInstance(String instanceID, String instanceName, String friendlyName, String ampVersion, String description, String serverType, String ipAddress, List<Integer> ports, int maxMemory) {
         this.instanceID = instanceID;
+        this.instanceName = instanceName;
         this.friendlyName = friendlyName;
+        this.ampVersion = ampVersion;
         this.description = description;
         this.serverType = serverType;
-        this.ipAddress = ipAddress;
+        this.applicationIP = ipAddress;
         this.ports = ports;
         this.maxMemory = maxMemory;
-    }
-
-    public void setNumPlayers(int numPlayers) {
-        this.numPlayers = numPlayers;
-    }
-
-    public void setCpuUsage(int cpuUsage) {
-        this.cpuUsage = cpuUsage;
-    }
-
-    public void setMemUsage(int memUsage) {
-        this.memUsage = memUsage;
-    }
-
-    public void setRunning(boolean running) {
-        isRunning = running;
     }
 
     public String getInstanceID() {
         return instanceID;
     }
 
+    public String getInstanceName() {
+        return instanceName;
+    }
+
     public String getFriendlyName() {
         return friendlyName;
+    }
+
+    public String getAmpVersion() {
+        return ampVersion;
     }
 
     public String getDescription() {
@@ -60,8 +57,8 @@ public class AMPInstance {
         return serverType;
     }
 
-    public String getIpAddress() {
-        return ipAddress;
+    public String getApplicationIP() {
+        return applicationIP;
     }
 
     public List<Integer> getPorts() {
@@ -69,19 +66,35 @@ public class AMPInstance {
     }
 
     public boolean isRunning() {
-        return isRunning;
+        return running;
+    }
+
+    public void setRunning(boolean running) {
+        this.running = running;
     }
 
     public int getNumPlayers() {
         return numPlayers;
     }
 
+    public void setNumPlayers(int numPlayers) {
+        this.numPlayers = numPlayers;
+    }
+
     public int getCpuUsage() {
         return cpuUsage;
     }
 
+    public void setCpuUsage(int cpuUsage) {
+        this.cpuUsage = cpuUsage;
+    }
+
     public int getMemUsage() {
         return memUsage;
+    }
+
+    public void setMemUsage(int memUsage) {
+        this.memUsage = memUsage;
     }
 
     public int getMaxMemory() {
