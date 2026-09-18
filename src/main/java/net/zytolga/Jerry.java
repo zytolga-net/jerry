@@ -11,9 +11,12 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import net.zytolga.dialogue.DialogueHandler;
+import net.zytolga.records.JsonResponse;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.EnumSet;
@@ -21,8 +24,13 @@ import java.util.Objects;
 
 @SuppressWarnings("CommentedOutCode")
 public class Jerry extends ListenerAdapter {
-    public static final Logger logger = LoggerFactory.getLogger(Jerry.class);
+    private static final Logger logger = LoggerFactory.getLogger(Jerry.class);
     private static final Logger chatLogger = LoggerFactory.getLogger("Chat");
+
+    private static final ObjectMapper mapper = new ObjectMapper();
+    public static JsonNode emptyJsonNode = mapper.readTree("{}");
+    public static JsonResponse emptyJsonResponseFail = new JsonResponse(emptyJsonNode, 500, false);
+
     private final QuoteProvider quoteProvider = new QuoteProvider();
 
     final DialogueHandler dialogueHandler = new DialogueHandler();
@@ -66,6 +74,7 @@ public class Jerry extends ListenerAdapter {
             ampService.StartInstance("TestingWorld01");
             ampService.GetInstances(false);
             ampService.AddUser("jerry");
+            ampService.SetAMPUserRoleMembership("jerry", "Game Server Manager", true);
 
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {

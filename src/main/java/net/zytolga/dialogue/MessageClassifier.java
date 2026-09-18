@@ -20,14 +20,17 @@ public class MessageClassifier {
         triggers.put(Category.FAREWELL, List.of("bye", "goodbye", "see ya", "see you", "later", "cya", "gtg", "gotta go"));
         triggers.put(Category.MOOD_QUESTION, List.of("how are you", "how you doing", "how're you", "hows it going", "how's it going", "you good", "you ok", "you okay", "how do you feel"));
         triggers.put(Category.COMPLIMENT, List.of("good bot", "great bot", "love you", "youre the best", "you're amazing", "youre amazing", "nice bot", "smart bot", "well done", "thank you so much"));
-        triggers.put(Category.INSULT, List.of("bad bot", "stupid bot", "dumb bot", "worst bot", "useless bot", "shut up", "i hate you", "you suck", "trash bot", "garbage bot", "kys", "kill yourself"));
+        triggers.put(Category.INSULT, List.of("bad bot", "stupid bot", "dumb bot", "worst bot", "useless bot", "shut up", "i hate you", "you suck", "trash bot", "garbage bot", "kys", "kill yourself", "fuck you", "bitch", "asshole"));
         triggers.put(Category.THANKS, List.of("thanks", "thank you", "thx", "ty", "appreciate it"));
 
         for (String w : List.of("love", "great", "awesome", "amazing", "good", "nice", "thanks", "thank", "cool", "best", "happy", "wonderful")) {
             sentimentWords.put(w, 4.0);
         }
-        for (String w : List.of("hate", "stupid", "dumb", "bad", "worst", "trash", "garbage", "suck", "annoying", "useless", "shut up", "idiot")) {
+        for (String w : List.of("hate", "stupid", "dumb", "bad", "worst", "trash", "garbage", "suck", "annoying", "useless", "shut up", "idiot", "fuck", "bitch")) {
             sentimentWords.put(w, -6.0);
+        }
+        for (String w : List.of("fuck", "bitch", "kys", "kill yourself", "asshole")) {
+            sentimentWords.put(w, -10.0);
         }
     }
 

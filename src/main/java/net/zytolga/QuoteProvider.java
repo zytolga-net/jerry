@@ -8,12 +8,10 @@ import java.util.Random;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.zytolga.records.Quote;
 import tools.jackson.databind.ObjectMapper;
 
 import java.awt.Color;
-
-record Quote(String quote, String author) {
-}
 
 public class QuoteProvider {
     private static final ObjectMapper MAPPER = new ObjectMapper();
