@@ -1,4 +1,4 @@
-package net.zytolga;
+package net.zytolga.amp;
 
 public class AMPServiceController {
 

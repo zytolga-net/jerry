@@ -1,5 +1,6 @@
-package net.zytolga;
+package net.zytolga.amp;
 
+import net.zytolga.Jerry;
 import net.zytolga.records.JsonResponse;
 import net.zytolga.records.Role;
 import net.zytolga.records.StringResponse;

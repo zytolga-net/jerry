@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
+import net.zytolga.amp.AMPService;
 import net.zytolga.dialogue.DialogueHandler;
 import net.zytolga.records.JsonResponse;
 import org.jetbrains.annotations.NotNull;
