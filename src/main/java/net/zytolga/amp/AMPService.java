@@ -5,6 +5,8 @@ import net.zytolga.records.JsonResponse;
 import net.zytolga.records.Role;
 import net.zytolga.records.StringResponse;
 import net.zytolga.records.User;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -67,38 +69,83 @@ public class AMPService {
         return response;
     }
 
-    public List<AMPInstance> GetInstances() {
+    public ArrayList<AMPInstance> GetInstances() {
         return GetInstances(false);
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    public List<AMPInstance> GetInstances(boolean ForceIncludeSelf) {
-        // this fucking sucked to figure out
+    public ArrayList<AMPInstance> GetInstances(boolean ForceIncludeSelf) {
         String postContent = """
                     {"ForceIncludeSelf": %b}
                 """.formatted(ForceIncludeSelf);
         JsonResponse response = httpPost("/API/ADSModule/GetInstances", postContent);
         if (response.success() && response.body().isArray()) {
-            List<AMPInstance> instances = new ArrayList<>();
+            ArrayList<AMPInstance> instances = new ArrayList<>();
             response.body().asArray().forEach(adsInstance -> {
                 if (!adsInstance.has("AvailableInstances")) {
                     logger.info("ADS instance {} has no available instances", adsInstance.has("FriendlyName") ? adsInstance.get("FriendlyName") : "Unknown");
                 } else {
-                    adsInstance.get("AvailableInstances").asArray().forEach(instance -> instances.add(new AMPInstance(
-                            getStringFromJson(instance, "InstanceID"),
-                            getStringFromJson(instance, "InstanceName"),
-                            getStringFromJson(instance, "FriendlyName"),
-                            getStringFromJson(instance, "AMPVersion"),
-                            getStringFromJson(instance, "Description"),
-                            instance.has("ModuleDisplayName") && !instance.get("ModuleDisplayName").isNull() ? getStringFromJson(instance, "ModuleDisplayName") : getStringFromJson(instance, "Module"),
-                            getStringFromJson(instance, "IP"),
-                            getPortsFromInstance(instance),
-                            getMaxMemoryFromInstance(instance)
-                    )));
+                    adsInstance.get("AvailableInstances").asArray().forEach(instance -> {
+                        AMPInstance inst = new AMPInstance(
+                                getStringFromJson(instance, "InstanceID"),
+                                getStringFromJson(instance, "InstanceName"),
+                                getStringFromJson(instance, "FriendlyName"),
+                                getStringFromJson(instance, "AMPVersion"),
+                                instance.has("ModuleDisplayName") && !instance.get("ModuleDisplayName").isNull() ? getStringFromJson(instance, "ModuleDisplayName") : getStringFromJson(instance, "Module"),
+                                getStringFromJson(instance, "IP"),
+                                getPortsFromInstance(instance),
+                                getMaxMemoryFromInstance(instance)
+                        );
+                        boolean running = Boolean.TRUE.equals(getBooleanFromJson(instance, "Running"));
+                        inst.setRunning(running);
+                        inst.setNumPlayers(running ? getNumPlayersFromInstance(instance) : 0);
+                        inst.setCpuUsage(running ? getCPUUsageFromInstance(instance) : 0);
+                        inst.setMemUsage(running ? getMemoryUsageFromInstance(instance) : 0);
+                        instances.add(inst);
+                    });
                 }
             });
             return instances;
-        } else return List.of();
+        } else return new ArrayList<>();
+    }
+
+    private int getCPUUsageFromInstance(@NotNull JsonNode instance) {
+        if (instance.has("Metrics") && !instance.get("Metrics").isNull()) {
+            if (instance.get("Metrics").has("CPU Usage") && !instance.get("Metrics").get("CPU Usage").isNull()) {
+                if (instance.get("Metrics").get("CPU Usage").has("MaxValue") && !instance.get("Metrics").get("CPU Usage").get("Percent").isNull()) {
+                    if (instance.get("Metrics").get("CPU Usage").get("Percent").isInt()) {
+                        return instance.get("Metrics").get("CPU Usage").get("Percent").asInt();
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+
+    private int getMemoryUsageFromInstance(@NotNull JsonNode instance) {
+        if (instance.has("Metrics") && !instance.get("Metrics").isNull()) {
+            if (instance.get("Metrics").has("Memory Usage") && !instance.get("Metrics").get("Memory Usage").isNull()) {
+                if (instance.get("Metrics").get("Memory Usage").has("MaxValue") && !instance.get("Metrics").get("Memory Usage").get("Percent").isNull()) {
+                    if (instance.get("Metrics").get("Memory Usage").get("Percent").isInt()) {
+                        return instance.get("Metrics").get("Memory Usage").get("Percent").asInt();
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+
+    private int getNumPlayersFromInstance(@NotNull JsonNode instance) {
+        if (instance.has("Metrics") && !instance.get("Metrics").isNull()) {
+            if (instance.get("Metrics").has("Active Users") && !instance.get("Metrics").get("Active Users").isNull()) {
+                if (instance.get("Metrics").get("Active Users").has("MaxValue") && !instance.get("Metrics").get("Active Users").get("RawValue").isNull()) {
+                    if (instance.get("Metrics").get("Active Users").get("RawValue").isInt()) {
+                        return instance.get("Metrics").get("Active Users").get("RawValue").asInt();
+                    }
+                }
+            }
+        }
+        return 0;
     }
 
     private int getMaxMemoryFromInstance(JsonNode instance) {
@@ -127,15 +174,34 @@ public class AMPService {
         return ports;
     }
 
-    private String getStringFromJson(JsonNode node, String key) {
+    private String getStringFromJson(@NotNull JsonNode node, @NotNull String key) {
         return node.has(key) && !node.get(key).isNull() ? node.get(key).asString() : "";
+    }
+
+    @Nullable
+    private Boolean getBooleanFromJson(@NotNull JsonNode node, @NotNull String key) {
+        return node.has(key) && !node.get(key).isNull() && node.get(key).isBoolean() ? node.get(key).asBoolean() : null;
     }
 
     @SuppressWarnings("unused")
     public AMPInstance GetInstance(String instanceName) {
-        List<AMPInstance> instances = GetInstances();
-        Optional<AMPInstance> instance = instances.stream().filter(inst -> inst.getInstanceName().equalsIgnoreCase(instanceName)).findFirst();
-        return instance.orElse(null);
+        AMPInstance[] instances = GetInstances().toArray(new AMPInstance[0]);
+        for (AMPInstance instance : instances) {
+            logger.info("Instance name {}", instance.getInstanceName());
+            if (instance.getInstanceName().equalsIgnoreCase(instanceName)) {
+                return instance;
+            }
+        }
+        return null;
+    }
+
+    public AMPInstance GetInstanceByFriendlyName(String friendlyName) {
+        for (AMPInstance instance : GetInstances()) {
+            if (instance.getFriendlyName().equalsIgnoreCase(friendlyName)) {
+                return instance;
+            }
+        }
+        return null;
     }
 
     @SuppressWarnings("UnusedReturnValue")

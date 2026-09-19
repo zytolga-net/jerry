@@ -8,7 +8,6 @@ public class AMPInstance {
     private final String friendlyName;
     private final String ampVersion;
 
-    private final String description;
     private final String serverType;
 
     private final String applicationIP;
@@ -21,12 +20,11 @@ public class AMPInstance {
     private int memUsage;
     private final int maxMemory;
 
-    public AMPInstance(String instanceID, String instanceName, String friendlyName, String ampVersion, String description, String serverType, String ipAddress, List<Integer> ports, int maxMemory) {
+    public AMPInstance(String instanceID, String instanceName, String friendlyName, String ampVersion, String serverType, String ipAddress, List<Integer> ports, int maxMemory) {
         this.instanceID = instanceID;
         this.instanceName = instanceName;
         this.friendlyName = friendlyName;
         this.ampVersion = ampVersion;
-        this.description = description;
         this.serverType = serverType;
         this.applicationIP = ipAddress;
         this.ports = ports;
@@ -47,10 +45,6 @@ public class AMPInstance {
 
     public String getAmpVersion() {
         return ampVersion;
-    }
-
-    public String getDescription() {
-        return description;
     }
 
     public String getServerType() {
@@ -86,7 +80,7 @@ public class AMPInstance {
     }
 
     public void setCpuUsage(int cpuUsage) {
-        this.cpuUsage = cpuUsage;
+        this.cpuUsage = Math.clamp(cpuUsage, 0, 100);
     }
 
     public int getMemUsage() {
@@ -94,7 +88,7 @@ public class AMPInstance {
     }
 
     public void setMemUsage(int memUsage) {
-        this.memUsage = memUsage;
+        this.memUsage = Math.clamp(memUsage, 0, 100);
     }
 
     public int getMaxMemory() {

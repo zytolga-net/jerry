@@ -2,15 +2,23 @@ package net.zytolga;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.Button;
 import net.dv8tion.jda.api.entities.MessageReference;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.InteractionContextType;
+import net.dv8tion.jda.api.interactions.commands.Command;
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
+import net.zytolga.amp.AMPInstance;
 import net.zytolga.amp.AMPService;
 import net.zytolga.dialogue.DialogueHandler;
 import net.zytolga.records.JsonResponse;
@@ -21,10 +29,13 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-@SuppressWarnings("CommentedOutCode")
 public class Jerry extends ListenerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(Jerry.class);
     private static final Logger chatLogger = LoggerFactory.getLogger("Chat");
@@ -36,6 +47,8 @@ public class Jerry extends ListenerAdapter {
     private final QuoteProvider quoteProvider = new QuoteProvider();
 
     final DialogueHandler dialogueHandler = new DialogueHandler();
+
+    private static AMPService ampService;
 
     public Jerry() throws IOException {
         super();
@@ -78,7 +91,18 @@ public class Jerry extends ListenerAdapter {
                                     "jerry :)"),
                             Commands.slash(
                                     "random_quote",
-                                    "Gives a random quote")
+                                    "Gives a random quote"),
+                            Commands.slash(
+                                            "buttontest",
+                                            "button test")
+                                    .setContexts(InteractionContextType.GUILD)
+                                    .setDefaultPermissions(DefaultMemberPermissions.DISABLED),
+                            Commands.slash(
+                                            "status",
+                                            "Gets the status of a server")
+                                    .addOption(OptionType.STRING, "server", "The server to get the status of", true, true)
+                                    .setContexts(InteractionContextType.GUILD)
+                                    .setDefaultPermissions(DefaultMemberPermissions.DISABLED)
                     ).queue(
                             success -> logger.info("Guild commands registered successfully"),
                             failure -> logger.error("Failed to register guild commands"));
@@ -91,7 +115,7 @@ public class Jerry extends ListenerAdapter {
         }
 
         try {
-            AMPService ampService = new AMPService("https://amp.zytolga.net", System.getenv("AMP_USERNAME"), System.getenv("AMP_PASSWORD"));
+            ampService = new AMPService("https://amp.zytolga.net", System.getenv("AMP_USERNAME"), System.getenv("AMP_PASSWORD"));
             ampService.login();
             ampService.StartInstance("TestingWorld01");
             ampService.GetInstances(false);
@@ -119,35 +143,69 @@ public class Jerry extends ListenerAdapter {
             case "random_quote":
                 event.replyEmbeds(quoteProvider.randomQuote()).queue();
                 break;
+            case "buttontest":
+                event.reply("Click the button to say hello")
+                        .addComponents(ActionRow.of(
+                                Button.primary("hello", "Click Me")))
+                        .queue();
+                break;
+            case "status":
+                String server = Objects.requireNonNull(event.getOption("server")).getAsString();
+                if (!getServerNames().contains(server.toLowerCase())) {
+                    event.reply("Server " + server + " not found.").setEphemeral(true).queue();
+                    break;
+                }
+                AMPInstance instance = ampService.GetInstanceByFriendlyName(server);
+                if (instance == null) {
+                    event.reply("Server " + server + " not found.").setEphemeral(true).queue();
+                    break;
+                }
+                String statusMessage = "Instance ID: `" + instance.getInstanceID() + "`\n" +
+                        "Instance Name: `" + instance.getInstanceName() + "`\n" +
+                        "Friendly Name: `" + instance.getFriendlyName() + "`\n" +
+                        "AMP Version: `" + instance.getAmpVersion() + "`\n" +
+                        "Server Type: `" + instance.getServerType() + "`\n" +
+                        "IP: `" + instance.getApplicationIP() + "`\n" +
+                        "Ports: `" + instance.getPorts() + "`\n" +
+                        "Max Memory: `" + instance.getMaxMemory() + "`\n" +
+                        "Running: `" + instance.isRunning() + "`\n" +
+                        "Players: `" + instance.getNumPlayers() + "`\n" +
+                        "CPU Usage: `" + instance.getCpuUsage() + "`\n" +
+                        "RAM Usage: `" + instance.getMemUsage() + "`";
+                event.reply(statusMessage).queue();
+                break;
             default:
                 event.reply("I can't handle that command right now :(").setEphemeral(true).queue();
         }
     }
 
-//    @Override
-//    public void onMessageReceived(@NotNull MessageReceivedEvent event) {
-//        LocalDateTime now = LocalDateTime.now();
-//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-//
-//        if (event.isFromType(ChannelType.PRIVATE)) {
-//            System.out.printf("\u001B[35m%s \u001B[36m[PM] \u001B[0m%s: %s\n", now.format(formatter), Objects.requireNonNull(event.getAuthor()).getEffectiveName(), event.getMessage().getContentRaw());
-//        } else {
-//            System.out.printf("\u001B[35m%s \u001B[36m[%s]\u001B[32m[%s] \u001B[0m%s: %s\n", now.format(formatter), event.getGuild().getName(), event.getChannel().getName(), Objects.requireNonNull(event.getMember()).getEffectiveName(), event.getMessage().getContentRaw());
-//        }
-//        if (event.getAuthor().isBot()) return;
-//
-//        if (event.getMessage().getMessageReference() != null) {
-//            MessageReference reference = event.getMessage().getMessageReference();
-//            reference.resolve().queue(referencedMessage -> {
-//                if (referencedMessage.getAuthor().getIdLong() == event.getJDA().getSelfUser().getIdLong()) {
-//                    event.getMessage().reply("I SAID I DON'T FUCKING KNOW!").mentionRepliedUser(false).queue();
-//                }
-//            });
-//
-//        } else if (event.getMessage().getContentRaw().contains("<@" + event.getJDA().getSelfUser().getId() + ">")) {
-//            event.getMessage().reply("I don't know").mentionRepliedUser(false).queue();
-//        }
-//    }
+    private ArrayList<String> getServerNames() {
+        ArrayList<String> instances = new ArrayList<>();
+
+        ampService.GetInstances().forEach(instance -> {
+            String name = instance.getFriendlyName();
+            if (!name.equalsIgnoreCase("ADS01")) instances.add(name.toLowerCase());
+        });
+
+        return instances;
+    }
+
+    @Override
+    public void onCommandAutoCompleteInteraction(CommandAutoCompleteInteractionEvent event) {
+        if (event.getName().equals("status") && event.getFocusedOption().getName().equals("server")) {
+            ArrayList<String> instances = new ArrayList<>();
+
+            ampService.GetInstances().forEach(instance -> {
+                if (!instance.getFriendlyName().equalsIgnoreCase("ADS01")) instances.add(instance.getFriendlyName());
+            });
+
+            List<Command.Choice> options = Stream.of(instances.toArray())
+                    .filter(server -> server.toString().startsWith(event.getFocusedOption().getValue())) // only display words that start with the user's current input
+                    .map(server -> new Command.Choice(server.toString(), server.toString()))
+                    .collect(Collectors.toList());
+            event.replyChoices(options).queue();
+        }
+    }
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
@@ -188,9 +246,7 @@ public class Jerry extends ListenerAdapter {
     @Override
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
         if (event.getComponentId().equals("hello")) {
-            event.reply("Hello :)").queue(); // send a message in the channel
-        } else if (event.getComponentId().equals("emoji")) {
-            event.editMessage("That button didn't say click me").queue(); // update the message
+            event.reply("Hello :)").queue();
         }
     }
 }
