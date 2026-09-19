@@ -133,25 +133,19 @@
   },
   "GENERAL": {
     "FURIOUS": [
-      "I'm not really in the mood to chat.",
       "...",
       "Go talk to someone else"
     ],
     "ANNOYED": [
-      "Mm.",
-      "Okay."
+      "No response coded for that or I just broke :/"
     ],
     "NEUTRAL": [
-      "Interesting.",
-      "Got it.",
-      "Okay, noted."
+      "No response coded for that or I just broke :/ sorry"
     ],
     "CONTENT": [
-      "Nice, tell me more!",
-      "That's cool."
+      "I don't have a coded response for that... sorry :)"
     ],
     "HAPPY": [
-      "Ooh, tell me more!",
       "I don't actually know what you're saying cause I'm just a bot, but I still hear you :)"
     ]
   },
